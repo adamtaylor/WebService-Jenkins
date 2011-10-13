@@ -1,36 +1,77 @@
 package WebService::Jenkins::Job;
 
 use Moose;
-with 'WebService::Jenkins::Role::Client';
+with 'WebService::Jenkins::Role::Client'
+     'WebService::Jenkins::Role::Bool';
 
 use Carp qw/ croak /;
+use Storable;
+
+has 'data' => (
+    isa => 'HashRef',
+    is => 'ro',
+    lazy_build => 1,
+);
+sub _build_data {
+    my ( $self ) = @_;
+
+    return $self->client->request( $self->url );
+};
 
 has 'description' => (
     isa => 'Str',
-    is => 'rw',
+    is => 'ro',
+    lazy_build => 1,
 );
+sub _build_description {
+    my ( $self ) = @_;
+
+    return $self->data->{description};
+}
+
 has 'display_name' => (
     isa => 'Str',
-    is => 'rw',
+    is => 'ro',
+    lazy_build => 1,
 );
+sub _build_display_name {
+    my ( $self ) = @_;
+
+    return $self->data->{displayName};
+}
+
 has 'name' => (
     isa => 'Str',
     is => 'ro',
     required => 1,
 );
+
 has 'url' => (
     isa => 'Str',
     is => 'ro',
     required => 1,
 );
+
 has 'buildable' => (
     isa => 'Bool',
-    is => 'rw',
+    is => 'ro',
+    lazy_build => 1,
 );
+sub _build_buildable {
+    my ( $self ) = @_;
+
+    return $self->bool($self->data->{buildable});
+}
+
 has 'builds' => (
     isa => 'ArrayRef[WebService::Jenkins::Build]',
-    is => 'rw',
+    is => 'ro',
+    lazy_build => 1,
 );
+sub _build_builds {
+    my ( $self ) = @_;
+};
+
 has 'color' => (
     isa => 'Str',
     is => 'ro',
@@ -77,10 +118,14 @@ has 'next_build_number' => (
     is => 'rw',
 );
 
-sub new_from_url {
-    my ( $self, $args ) = @_;
+# Intercept massive Moose stacktraces and throw more human friendly errors.
+# Uneccesary?
+around BUILDARGS => sub {
+    my ( $orig, $class, $args ) = @_;
 
-    my @args = qw/ url name color/;
+    $args = Storable::dclone($args) if ref $args;
+
+    my @args = qw/url name color/;
 
     for ( @args ) {
         croak "$_ argument required" unless $args->{$_}
@@ -90,9 +135,13 @@ sub new_from_url {
     my $name  = delete $args->{name};
     my $color = delete $args->{color};
 
-    croak "Unexpected arguments" if $args;
+    croak "Unexpected arguments" if keys %{$args};
 
-    my $resp = $self->request( $args->{url} );
-}
+    $class->$orig({
+        url   => $url,
+        name  => $name,
+        color => $color,
+    });
+};
 
 1;

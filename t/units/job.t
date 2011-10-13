@@ -14,9 +14,9 @@ isa_ok( $job, WebService::Jenkins::Job, 'Instantiated the correct class' );
 
 dies_ok { WebService::Jenkins::Job->new } 'Dies without params';
 
-throws_ok { WebService::Jenkins::Job->new_from_url() } qr/argument required/,
+throws_ok { WebService::Jenkins::Job->new } qr/argument required/,
     'Missing argument exception thrown';
 
 $build_args->{foo} = 'bar';
-throws_ok { WebService::Jenkins::Job->new_from_url( $build_args ) }
+throws_ok { WebService::Jenkins::Job->new( $build_args ) }
     qr/Unexpected arguments/, 'Unexpected argument exception thrown';
