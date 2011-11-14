@@ -1,7 +1,7 @@
 package WebService::Jenkins::Job;
 
 use Moose;
-with 'WebService::Jenkins::Role::Client'
+with 'WebService::Jenkins::Role::Client',
      'WebService::Jenkins::Role::Bool';
 
 use Carp qw/ croak /;
