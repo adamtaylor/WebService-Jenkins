@@ -1,5 +1,5 @@
 # ABSTRACT: Convert a Java style boolean into a Perl boolean.
-package WebService::Jenkins::Bool;
+package WebService::Jenkins::Role::Bool;
 
 use Moose::Role;
 use Carp qw/ croak /;
@@ -15,7 +15,7 @@ sub bool {
     my $lookup = {
         true  => 1,
         false => 0,
-    }
+    };
 
     return $lookup->{$str};
 }
